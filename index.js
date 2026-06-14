@@ -7,7 +7,6 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express()
 const port = process.env.PORT;
 
-
 // middleware
 app.use(cors())
 app.use(express.json())
@@ -74,7 +73,28 @@ async function run() {
 
         })
 
+        // company api
+        app.post('/api/companies', async (req, res) => {
+            try {
+                const companyData = req.body
 
+                const result = await companyCollection.insertOne(companyData)
+
+                res.status(201).send({
+                    success: true,
+                    message: "Company Created Successfully",
+                    insertedId: result.insertedId
+                })
+                
+            } catch (error) {   
+                console.error('Company POST api error', error);
+
+                res.status(500).send({
+                    success: false,
+                    message: "Internal Server Error"
+                })
+            }
+        })
 
 
 
