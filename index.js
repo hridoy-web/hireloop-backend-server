@@ -36,7 +36,12 @@ async function run() {
             try {
                 const jobData = req.body;
 
-                const result = await jobCollection.insertOne(jobData)
+                const newJob = {
+                    ...jobData,
+                    createdAt: new Date()
+                }
+
+                const result = await jobCollection.insertOne(newJob)
 
                 res.status(201).send({
                     success: true,
@@ -78,15 +83,20 @@ async function run() {
             try {
                 const companyData = req.body
 
-                const result = await companyCollection.insertOne(companyData)
+                const newCompany = {
+                    ...companyData,
+                    createdAt: new Date()
+                }
+
+                const result = await companyCollection.insertOne(newCompany)
 
                 res.status(201).send({
                     success: true,
                     message: "Company Created Successfully",
                     insertedId: result.insertedId
                 })
-                
-            } catch (error) {   
+
+            } catch (error) {
                 console.error('Company POST api error', error);
 
                 res.status(500).send({
@@ -96,8 +106,47 @@ async function run() {
             }
         })
 
+        app.get('/api/my/companies', async (req, res) => {
+            try {
+                const { recruiterId } = req.query;
+
+                // recruiterId not exist then return
+                if (!recruiterId) {
+                    return res.status(200).send({
+                        success: false,
+                        message: "No recruiterId provided",
+                        data: null
+                    });
+                }
+
+                const query = { recruiterId: recruiterId };
+                const result = await companyCollection.findOne(query);
+
+                // if company not exist
+                if (!result) {
+                    return res.status(200).send({
+                        success: false,
+                        isNewUser: true,
+                        data: null
+                    });
+                }
+
+                // company is exist then json data send
+                res.status(200).send(result);
+
+            } catch (error) {
+                console.error("Error fetching recruiter company:", error);
+                res.status(500).send({
+                    success: false,
+                    message: "Internal Server Error"
+                });
+            }
+        });
 
 
+
+
+        
         console.log("MongoDB Connected Successfully");
     } catch (error) {
         console.log('database error:', error)
